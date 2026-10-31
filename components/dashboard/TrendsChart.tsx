@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -17,8 +17,13 @@ interface TrendsChartProps {
 }
 
 export function TrendsChart({ complaints }: TrendsChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const chartData = useMemo(() => {
-    // Group complaints into past 7 days
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const now = new Date();
     const result = [];
@@ -28,13 +33,11 @@ export function TrendsChart({ complaints }: TrendsChartProps) {
       d.setDate(d.getDate() - i);
       const dayName = days[d.getDay()];
 
-      // Count complaints for this day
       const count = complaints.filter(c => {
         const cDate = new Date(c.createdAt);
         return cDate.toDateString() === d.toDateString();
       }).length;
 
-      // Resolved count
       const resolved = complaints.filter(c => {
         const cDate = new Date(c.createdAt);
         return cDate.toDateString() === d.toDateString() && c.status === "Resolved";
@@ -42,13 +45,22 @@ export function TrendsChart({ complaints }: TrendsChartProps) {
 
       result.push({
         name: dayName,
-        submitted: count > 0 ? count + Math.floor(Math.random() * 2) : (i % 2 === 0 ? 2 : 1),
+        submitted: count > 0 ? count : (i % 2 === 0 ? 2 : 1),
         resolved: resolved > 0 ? resolved : (i % 3 === 0 ? 1 : 0)
       });
     }
 
     return result;
   }, [complaints]);
+
+  if (!mounted) {
+    return (
+      <div className="h-[280px] w-full flex items-center justify-center text-slate-500 text-xs">
+        <span className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mr-2" />
+        Loading telemetry chart...
+      </div>
+    );
+  }
 
   return (
     <div className="h-[280px] w-full pt-4">

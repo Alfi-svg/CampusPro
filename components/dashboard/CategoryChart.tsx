@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   PieChart,
   Pie,
@@ -25,6 +25,12 @@ const CATEGORY_COLORS: Record<ComplaintCategory, string> = {
 };
 
 export function CategoryChart({ complaints }: CategoryChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const data = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const c of complaints) {
@@ -39,6 +45,15 @@ export function CategoryChart({ complaints }: CategoryChartProps) {
   }, [complaints]);
 
   const total = complaints.length;
+
+  if (!mounted) {
+    return (
+      <div className="h-[220px] w-full flex items-center justify-center text-slate-500 text-xs">
+        <span className="w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mr-2" />
+        Loading category data...
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-2">
